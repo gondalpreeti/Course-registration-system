@@ -1,0 +1,258 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_COURSES 5
+#define MAX_STUDENTS 50
+
+// Structures for course, student
+typedef struct {
+    int id;
+    char name[50];
+    char schedule[20];  // Example: "Mon 10-12"
+    float fee;          // Course fee
+    char material[100]; // Course material
+} Course;
+
+typedef struct {
+    int id;
+    char name[50];
+    int enrolled_courses[MAX_COURSES];
+    int enrolled_count;
+    float total_fee_paid; // Total fee paid by the student
+    int attendance[MAX_COURSES]; // Attendance for each course
+    float grades[MAX_COURSES];   // Grades for each course
+} Student;
+
+// Function prototypes
+void addCourse(Course courses[], int *course_count);
+void displayCourses(Course courses[], int course_count);
+void displayFeeStructure(Course courses[], int course_count);
+void addCourseMaterial(Course courses[], int course_count);
+void displayCourseMaterials(Course courses[], int course_count);
+void registerStudent(Student *student);
+void registerForCourse(Course courses[], int course_count, Student *student);
+void viewStudentSchedule(Student student, Course courses[]);
+void updateAttendance(Student *student);
+void assignGrades(Course courses[], int course_count, Student *student);
+void viewGradesAndAttendance(Student student, Course courses[]);
+void anonymousFeedback();
+
+int main() {
+    Course courses[MAX_COURSES];
+    Student student = {0};
+    int course_count = 0;
+    int choice;
+
+    do {
+        printf("\nCourse Registration System\n");
+        printf("1. Add Course\n");
+        printf("2. Add Course Material\n");
+        printf("3. Display Available Courses\n");
+        printf("4. View Fee Structure for Courses\n");
+        printf("5. Register a Student\n");
+        printf("6. Register for a Course\n");
+        printf("7. Display Course Material\n");
+        printf("8. View Student Schedule\n");
+        printf("9. Update Attendance\n");
+        printf("10. Assign Grades\n");
+        printf("11. View Grades and Attendance\n");
+        printf("12. Anonymous Feedback\n");
+        printf("13. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addCourse(courses, &course_count);
+                break;
+            case 2:
+                addCourseMaterial(courses, course_count);
+                break;
+            case 3:
+                displayCourses(courses, course_count);
+                break;
+            case 4:
+                displayFeeStructure(courses, course_count);
+                break;
+            case 5:
+                registerStudent(&student);
+                break;
+            case 6:
+                registerForCourse(courses, course_count, &student);
+                break;
+            case 7:
+                displayCourseMaterials(courses, course_count);
+                break;
+            case 8:
+                viewStudentSchedule(student, courses);
+                break;
+            case 9:
+                updateAttendance(&student);
+                break;
+            case 10:
+                assignGrades(courses, course_count, &student);
+                break;
+            case 11:
+                viewGradesAndAttendance(student, courses);
+                break;
+            case 12:
+                anonymousFeedback();
+                break;
+            case 13:
+                printf("Exiting system. Goodbye!\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 13);
+
+    return 0;
+}
+
+// Function implementations
+void addCourse(Course courses[], int *course_count) {
+    if (*course_count >= MAX_COURSES) {
+        printf("Cannot add more courses. Maximum limit reached.\n");
+        return;
+    }
+
+    int id = *course_count + 1;
+    courses[*course_count].id = id;
+    printf("Enter course name: ");
+    scanf(" %[^\n]", courses[*course_count].name);
+    printf("Enter course schedule (e.g., Mon 10-12): ");
+    scanf(" %[^\n]", courses[*course_count].schedule);
+    printf("Enter course fee: ");
+    scanf("%f", &courses[*course_count].fee);
+    (*course_count)++;
+    printf("Course added successfully.\n");
+}
+
+void displayCourses(Course courses[], int course_count) {
+    printf("Available Courses:\n");
+    for (int i = 0; i < course_count; i++) {
+        printf("ID: %d, Name: %s, Schedule: %s, Fee: %.2f\n",
+                courses[i].id, courses[i].name, courses[i].schedule, courses[i].fee);
+    }
+}
+
+void displayFeeStructure(Course courses[], int course_count) {
+    printf("Fee Structure for Available Courses:\n");
+    for (int i = 0; i < course_count; i++) {
+        printf("Course: %s, Fee: %.2f\n", courses[i].name, courses[i].fee);
+    }
+}
+
+void addCourseMaterial(Course courses[], int course_count) {
+    int course_id;
+    printf("Enter course ID to add materials: ");
+    scanf("%d", &course_id);
+
+    if (course_id < 1 || course_id > course_count) {
+        printf("Invalid course ID.\n");
+        return;
+    }
+
+    printf("Enter material description: ");
+    scanf(" %[^\n]", courses[course_id - 1].material);
+    printf("Material added successfully.\n");
+}
+
+void displayCourseMaterials(Course courses[], int course_count) {
+    int course_id;
+    printf("Enter course ID to view materials: ");
+    scanf("%d", &course_id);
+
+    if (course_id < 1 || course_id > course_count) {
+        printf("Invalid course ID.\n");
+        return;
+    }
+
+    printf("Materials for course %s:\n", courses[course_id - 1].name);
+    printf("%s\n", courses[course_id - 1].material);
+}
+
+void registerStudent(Student *student) {
+    printf("Enter student name: ");
+    scanf(" %[^\n]", student->name);
+    student->enrolled_count = 0;
+    student->total_fee_paid = 0.0;
+    printf("Student registered successfully.\n");
+}
+
+void registerForCourse(Course courses[], int course_count, Student *student) {
+    int course_id;
+    printf("Enter course ID to register: ");
+    scanf("%d", &course_id);
+
+    if (course_id < 1 || course_id > course_count) {
+        printf("Invalid course ID.\n");
+        return;
+    }
+
+    if (student->enrolled_count >= MAX_COURSES) {
+        printf("You cannot enroll in more than %d courses.\n", MAX_COURSES);
+        return;
+    }
+
+    student->enrolled_courses[student->enrolled_count++] = course_id;
+    student->total_fee_paid += courses[course_id - 1].fee;
+    printf("Enrolled in course: %s\n", courses[course_id - 1].name);
+}
+
+void viewStudentSchedule(Student student, Course courses[]) {
+    printf("Schedule for student %s:\n", student.name);
+    for (int i = 0; i < student.enrolled_count; i++) {
+        int course_id = student.enrolled_courses[i];
+        printf("Course: %s, Schedule: %s\n",
+               courses[course_id - 1].name, courses[course_id - 1].schedule);
+    }
+}
+
+void updateAttendance(Student *student) {
+    int course_id;
+    printf("Enter course ID to update attendance: ");
+    scanf("%d", &course_id);
+
+    if (course_id < 1 || course_id > MAX_COURSES) {
+        printf("Invalid course ID.\n");
+        return;
+    }
+
+    printf("Enter attendance (1 for present, 0 for absent): ");
+    scanf("%d", &student->attendance[course_id - 1]);
+    printf("Attendance updated for course %d.\n", course_id);
+}
+
+void assignGrades(Course courses[], int course_count, Student *student) {
+    int course_id;
+    printf("Enter course ID to assign grade: ");
+    scanf("%d", &course_id);
+
+    if (course_id < 1 || course_id > course_count) {
+        printf("Invalid course ID.\n");
+        return;
+    }
+
+    printf("Enter grade for course %s: ", courses[course_id - 1].name);
+    scanf("%f", &student->grades[course_id - 1]);
+    printf("Grade assigned for course %s.\n", courses[course_id - 1].name);
+}
+
+void viewGradesAndAttendance(Student student, Course courses[]) {
+    printf("Grades and Attendance for %s:\n", student.name);
+    for (int i = 0; i < student.enrolled_count; i++) {
+        int course_id = student.enrolled_courses[i];
+        printf("Course: %s, Grade: %.2f, Attendance: %d\n",
+               courses[course_id - 1].name, student.grades[course_id - 1], student.attendance[course_id - 1]);
+    }
+    printf("Total Fee Paid: %.2f\n", student.total_fee_paid);
+}
+
+void anonymousFeedback() {
+    char feedback[100];
+    printf("Enter anonymous feedback: ");
+    getchar(); // To consume the newline left by previous input
+    fgets(feedback, 100, stdin);
+    printf("Thank you for your feedback!\n");
+}
